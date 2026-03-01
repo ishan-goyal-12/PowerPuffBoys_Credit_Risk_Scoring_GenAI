@@ -1,0 +1,277 @@
+\documentclass[12pt,a4paper]{article}
+
+% ── Packages ──
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+
+% ── Colors ──
+\definecolor{titleblue}{RGB}{30,58,138}
+\definecolor{sectionblue}{RGB}{37,99,235}
+\definecolor{linkblue}{RGB}{59,130,246}
+
+% ── Hyperref Setup ──
+\hypersetup{
+    colorlinks=true,
+    linkcolor=sectionblue,
+    urlcolor=linkblue,
+    citecolor=sectionblue,
+    pdftitle={Intelligent Credit Risk Scoring Engine -- Milestone 1 Report},
+    pdfauthor={Team PowerPuff Boys}
+}
+
+% ── Section Styling ──
+\titleformat{\section}
+    {\Large\bfseries\color{titleblue}}
+    {\thesection.}{0.5em}{}
+\titleformat{\subsection}
+    {\large\bfseries\color{sectionblue}}
+    {\thesubsection}{0.5em}{}
+
+% ── Header / Footer ──
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{Credit Risk Scoring Engine}}
+\fancyhead[R]{\small\textit{Team PowerPuff Boys}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Spacing ──
+\setstretch{1.25}
+
+% ────────────────────────────────────────────────────────
+\begin{document}
+
+% ── Title Page ──
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+
+    {\Huge\bfseries\color{titleblue}
+        Intelligent Credit Risk\\[0.3em]
+        Scoring Engine\\[1.5em]
+    }
+
+    {\Large Milestone 1 Project Report\\[2em]}
+
+    {\large\itshape
+        Behavioral Credit Risk Classification\\
+        using Classical Machine Learning\\
+        and Streamlit Deployment\\[3em]
+    }
+
+    {\Large\bfseries Team PowerPuff Boys\\[2em]}
+
+    \vfill
+    {\large \today}
+
+\end{titlepage}
+
+% ── Table of Contents ──
+\tableofcontents
+\newpage
+
+% ────────────────────────────────────────────────────────
+\section{Abstract}
+
+This report presents the implementation of an intelligent credit risk scoring engine that predicts borrower risk across four priority classes using behavioral and financial features derived from internal bank records and CIBIL bureau data. The system deliberately excludes the Credit Score to ensure predictions are based on behavioral indicators rather than replicating existing bureau scores.
+
+Three supervised machine learning models---Decision Tree, Random Forest, and HistGradientBoosting---were trained and evaluated on a stratified dataset. A cost-sensitive gradient boosting model achieved the best performance, significantly improving medium-risk detection while maintaining overall accuracy. The trained model was deployed using Streamlit and Streamlit Community Cloud, providing an interactive interface for real-time risk prediction.
+
+% ────────────────────────────────────────────────────────
+\section{Introduction}
+
+Credit risk assessment is fundamental to lending decisions. Traditional credit scoring systems rely heavily on static bureau scores, which provide limited interpretability regarding behavioral risk factors. Machine learning enables predictive modeling using borrower behavior, repayment history, enquiry activity, and credit exposure patterns.
+
+The objective of this milestone is to build a complete machine learning pipeline including:
+\begin{itemize}[nosep]
+    \item Dataset merging and integration
+    \item Data preprocessing and feature engineering
+    \item Model training and evaluation
+    \item Deployment via a Streamlit web interface
+\end{itemize}
+
+% ────────────────────────────────────────────────────────
+\section{Dataset Description}
+
+The system integrates two datasets joined using \texttt{PROSPECT\_ID}:
+
+\begin{itemize}[nosep]
+    \item \textbf{Internal Bank Dataset} --- 25 trade line features including account counts, missed payments, loan category breakdowns, and account age metrics.
+    \item \textbf{External CIBIL Dataset} --- Over 60 behavioral, delinquency, enquiry, and demographic features including credit utilization, enquiry frequency, and delinquency history.
+\end{itemize}
+
+\noindent The merged dataset contains \textbf{51,336 records} across \textbf{87 features}.
+
+\subsection{Target Variable}
+
+The target variable \texttt{Approved\_Flag} was mapped to four risk tiers:
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{@{} l l r r @{}}
+        \toprule
+        \textbf{Class} & \textbf{Risk Level} & \textbf{Count} & \textbf{\% of Total} \\
+        \midrule
+        P1 & Very Low Risk  & 5,803  & 11.3\% \\
+        P2 & Low Risk       & 32,199 & 62.7\% \\
+        P3 & Medium Risk    & 7,452  & 14.5\% \\
+        P4 & High Risk      & 5,882  & 11.5\% \\
+        \bottomrule
+    \end{tabular}
+    \caption{Target class distribution in the dataset.}
+    \label{tab:class_dist}
+\end{table}
+
+% ────────────────────────────────────────────────────────
+\section{Data Preprocessing}
+
+The following preprocessing steps were applied:
+
+\begin{enumerate}[nosep]
+    \item \textbf{Sentinel value handling} --- Values of $-99999$ (used as missing indicators) were replaced with \texttt{NaN}.
+    \item \textbf{Column removal} --- Columns with excessive missing data were dropped.
+    \item \textbf{Delinquency imputation} --- Null values in delinquency-related fields were filled with zero (representing no delinquency).
+    \item \textbf{Numeric imputation} --- Remaining numeric fields were imputed using median values.
+    \item \textbf{Duplicate removal} --- Duplicate records were identified and removed.
+    \item \textbf{Categorical encoding} --- Categorical variables (\texttt{MARITALSTATUS}, \texttt{EDUCATION}, \texttt{GENDER}, \texttt{last\_prod\_enq2}, \texttt{first\_prod\_enq2}) were encoded using one-hot encoding with \texttt{drop\_first=True}.
+    \item \textbf{Credit Score removal} --- The \texttt{Credit\_Score} feature was deliberately removed to prevent model leakage and ensure behavior-based learning.
+\end{enumerate}
+
+% ────────────────────────────────────────────────────────
+\section{Model Development}
+
+Three supervised learning models were trained using an \textbf{80/20 stratified split}.
+
+\subsection{Decision Tree}
+
+A Decision Tree classifier with \texttt{max\_depth=5} achieved \textbf{78\% accuracy} but exhibited poor medium-risk recall (\textbf{0.31}), indicating significant difficulty in identifying medium-risk borrowers.
+
+\subsection{Random Forest}
+
+Random Forest with \texttt{GridSearchCV} hyperparameter tuning improved the Macro F1-score to \textbf{0.70} and medium-risk recall to \textbf{0.41}. While an improvement, medium-risk detection remained insufficient.
+
+\subsection{HistGradientBoosting (Final Model)}
+
+HistGradientBoosting with \textbf{cost-sensitive weighting} was selected as the final model. Key hyperparameters:
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{@{} l l @{}}
+        \toprule
+        \textbf{Parameter} & \textbf{Value} \\
+        \midrule
+        \texttt{max\_depth}     & 8     \\
+        \texttt{learning\_rate} & 0.05  \\
+        \texttt{max\_iter}      & 300   \\
+        Class weighting        & Cost-sensitive \\
+        \bottomrule
+    \end{tabular}
+    \caption{HistGradientBoosting hyperparameters.}
+    \label{tab:hyperparams}
+\end{table}
+
+\noindent This model improved medium-risk recall to \textbf{0.65}, making it the best-performing model overall.
+
+% ────────────────────────────────────────────────────────
+\section{Results}
+
+The final model was evaluated on a \textbf{10,268-sample test set}. Summary results:
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{@{} l c @{}}
+        \toprule
+        \textbf{Metric} & \textbf{Value} \\
+        \midrule
+        Weighted Precision & 0.81 \\
+        Weighted Recall    & 0.78 \\
+        Macro F1-Score     & 0.73 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Final model performance on the test set.}
+    \label{tab:results}
+\end{table}
+
+\noindent Medium-risk detection improved significantly compared to baseline models, demonstrating the effectiveness of cost-sensitive learning in addressing class imbalance.
+
+\subsection{Model Comparison}
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{@{} l c c c @{}}
+        \toprule
+        \textbf{Model} & \textbf{Accuracy} & \textbf{Macro F1} & \textbf{P3 Recall} \\
+        \midrule
+        Decision Tree          & 0.78 & ---  & 0.31 \\
+        Random Forest          & ---  & 0.70 & 0.41 \\
+        HistGradientBoosting   & ---  & 0.73 & \textbf{0.65} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Comparison of model performance across experiments.}
+    \label{tab:comparison}
+\end{table}
+
+% ────────────────────────────────────────────────────────
+\section{Streamlit Deployment}
+
+A Streamlit application was developed to provide real-time credit risk prediction. Key features include:
+
+\begin{itemize}[nosep]
+    \item \textbf{Prospect selection} --- Users can select or randomize prospect IDs from the CIBIL dataset.
+    \item \textbf{Trade line adjustment} --- Interactive widgets allow users to modify bureau trade line features.
+    \item \textbf{Risk prediction} --- The system produces a risk classification (P1--P4) with probability breakdowns for each class.
+    \item \textbf{Full pipeline mirroring} --- The application replicates the complete preprocessing pipeline to ensure consistency with training.
+\end{itemize}
+
+\noindent The trained HistGradientBoosting model is loaded using \texttt{joblib} and the system is deployed on Streamlit Community Cloud for public accessibility.
+
+% ────────────────────────────────────────────────────────
+\section{Tools and Technologies}
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{@{} l l @{}}
+        \toprule
+        \textbf{Category} & \textbf{Tools} \\
+        \midrule
+        Language           & Python 3.10 \\
+        Machine Learning   & scikit-learn (Decision Tree, Random Forest, HistGBT) \\
+        Data Processing    & pandas, NumPy \\
+        Visualization      & Matplotlib, Seaborn \\
+        Deployment         & Streamlit, Streamlit Community Cloud \\
+        Model Persistence  & joblib \\
+        Development        & Jupyter Notebook \\
+        Version Control    & Git, GitHub \\
+        \bottomrule
+    \end{tabular}
+    \caption{Tools and technologies used in this project.}
+    \label{tab:tools}
+\end{table}
+
+% ────────────────────────────────────────────────────────
+\section{Conclusion}
+
+This milestone successfully implemented a behavioral credit risk prediction system using classical machine learning. Key achievements include:
+
+\begin{itemize}[nosep]
+    \item Built an end-to-end ML pipeline from data integration to deployment.
+    \item The cost-sensitive HistGradientBoosting model provided the best performance, particularly improving medium-risk borrower detection (P3 recall: $0.31 \rightarrow 0.65$).
+    \item Deployed an interactive Streamlit application for real-time risk prediction.
+\end{itemize}
+
+\noindent \textbf{Future milestones} will extend the system with advanced AI reasoning, GenAI-powered explanations, and automated decision support capabilities.
+
+% ────────────────────────────────────────────────────────
+
+\end{document}

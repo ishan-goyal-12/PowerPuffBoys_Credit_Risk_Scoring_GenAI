@@ -3,7 +3,259 @@ import pandas as pd
 import numpy as np
 import joblib
 
+# ──────────────────────────────────────────────────
+# Page Configuration
+# ──────────────────────────────────────────────────
+st.set_page_config(
+    page_title="Credit Risk Scoring Engine",
+    page_icon="",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
+# ──────────────────────────────────────────────────
+# Custom CSS — FinNuvora-inspired Black/Gold Theme
+# ──────────────────────────────────────────────────
+st.markdown("""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    /* ── Global ── */
+    .stApp {
+        background: #1F1F1F;
+        font-family: 'Inter', sans-serif;
+        color: #A1A1AA;
+    }
+
+    header[data-testid="stHeader"] { background: transparent; }
+    #MainMenu { visibility: hidden; }
+    footer { visibility: hidden; }
+
+    /* ── Sidebar ── */
+    section[data-testid="stSidebar"] {
+        background: #181818;
+        border-right: 1px solid rgba(255,255,255,0.06);
+    }
+    section[data-testid="stSidebar"] .stSelectbox label {
+        color: #A1A1AA;
+    }
+
+    /* ── Hero ── */
+    .hero-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #FFFFFF;
+        text-align: center;
+        margin-bottom: 0.1rem;
+        letter-spacing: -0.03em;
+    }
+    .hero-title span {
+        background: linear-gradient(135deg, #FBBF24, #F59E0B);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .hero-subtitle {
+        text-align: center;
+        color: #71717A;
+        font-size: 1rem;
+        font-weight: 400;
+        margin-bottom: 2rem;
+    }
+
+    /* ── Metric Cards ── */
+    .metric-card {
+        background: #242424;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 14px;
+        padding: 1.3rem 1.5rem;
+        margin: 0.4rem 0;
+        text-align: center;
+        transition: all 0.25s ease;
+    }
+    .metric-card:hover {
+        border-color: rgba(251,191,36,0.35);
+        box-shadow: 0 6px 20px rgba(251,191,36,0.06);
+        transform: translateY(-1px);
+    }
+    .metric-label {
+        font-size: 0.7rem;
+        color: #71717A;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 0.45rem;
+        font-weight: 600;
+    }
+    .metric-value {
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: #FFFFFF;
+    }
+
+    /* ── Section Headers ── */
+    .section-header {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #FBBF24;
+        margin: 2rem 0 1rem 0;
+        padding-bottom: 0.6rem;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    /* ── Risk Result Card ── */
+    .risk-result {
+        border-radius: 16px;
+        padding: 2.5rem 2rem;
+        text-align: center;
+        margin: 2rem auto;
+        max-width: 520px;
+        animation: fadeIn 0.5s ease-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.96); }
+        to { opacity: 1; transform: scale(1); }
+    }
+    .risk-label {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        letter-spacing: 0.04em;
+    }
+    .risk-sub { font-size: 0.85rem; color: #71717A; }
+
+    /* ── Probability Bars ── */
+    .prob-container { margin: 0.55rem 0; }
+    .prob-bar-bg {
+        background: #242424;
+        border-radius: 6px;
+        height: 26px;
+        overflow: hidden;
+    }
+    .prob-bar-fill {
+        height: 100%;
+        border-radius: 6px;
+        transition: width 0.7s ease;
+        display: flex;
+        align-items: center;
+        padding-left: 10px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #1F1F1F;
+    }
+    .prob-label {
+        font-size: 0.78rem;
+        color: #71717A;
+        margin-bottom: 3px;
+        font-weight: 500;
+    }
+
+    /* ── Input Styling ── */
+    .stNumberInput label, .stSlider label {
+        color: #A1A1AA !important;
+        font-weight: 500 !important;
+    }
+
+    /* ── Tabs ── */
+    .stTabs [data-baseweb="tab-list"] { gap: 4px; }
+    .stTabs [data-baseweb="tab"] {
+        background: #242424;
+        border-radius: 8px 8px 0 0;
+        border: 1px solid rgba(255,255,255,0.06);
+        color: #71717A;
+        font-weight: 500;
+    }
+    .stTabs [aria-selected="true"] {
+        background: #2a2a2a !important;
+        color: #FBBF24 !important;
+        border-color: #FBBF24 !important;
+        border-bottom: 2px solid #FBBF24 !important;
+    }
+
+    /* ── Primary Button ── */
+    .stButton > button[kind="primary"] {
+        background: #FBBF24 !important;
+        color: #1F1F1F !important;
+        border: none !important;
+        font-weight: 700 !important;
+        border-radius: 50px !important;
+        padding: 0.8rem 2.5rem !important;
+        font-size: 1rem !important;
+        transition: all 0.25s ease !important;
+        box-shadow: 0 4px 14px rgba(251,191,36,0.2) !important;
+        letter-spacing: 0.01em !important;
+    }
+    .stButton > button[kind="primary"]:hover {
+        background: #F59E0B !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 6px 20px rgba(251,191,36,0.3) !important;
+    }
+
+    /* ── Secondary Button ── */
+    .stButton > button:not([kind="primary"]) {
+        background: transparent !important;
+        color: #A1A1AA !important;
+        border: 1px solid rgba(255,255,255,0.15) !important;
+        border-radius: 50px !important;
+        font-weight: 500 !important;
+        transition: all 0.25s ease !important;
+    }
+    .stButton > button:not([kind="primary"]):hover {
+        border-color: #FBBF24 !important;
+        color: #FBBF24 !important;
+    }
+
+    /* ── Divider ── */
+    .styled-divider {
+        height: 1px;
+        background: rgba(255,255,255,0.06);
+        margin: 1.5rem 0;
+    }
+
+    /* ── Cards Row Spacing ── */
+    .cards-row {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 0.8rem;
+    }
+    .cards-row .metric-card { flex: 1; }
+
+    /* ── Sidebar Brand ── */
+    .sidebar-brand {
+        text-align: center;
+        padding: 1.5rem 0 0.8rem;
+    }
+    .sidebar-brand-icon {
+        width: 44px;
+        height: 44px;
+        background: #FBBF24;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #1F1F1F;
+        margin-bottom: 0.6rem;
+    }
+    .sidebar-brand-name {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #FFFFFF;
+    }
+    .sidebar-brand-sub {
+        font-size: 0.7rem;
+        color: #71717A;
+        margin-top: 0.15rem;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+
+# ──────────────────────────────────────────────────
+# Data & Model Loading
+# ──────────────────────────────────────────────────
 @st.cache_data
 def load_cibil():
     return pd.read_csv("./Dataset/Unseen_CIBL_Data.csv")
@@ -17,196 +269,391 @@ model = load_model()
 FEATURES = list(model.feature_names_in_)
 
 
-TRADE_LINE_FEATURES = [
-    "Total_TL","Tot_Closed_TL","Tot_Active_TL",
-    "Total_TL_opened_L6M","Tot_TL_closed_L6M",
-    "pct_tl_open_L6M","pct_tl_closed_L6M",
-    "pct_active_tl","pct_closed_tl",
-    "Total_TL_opened_L12M","Tot_TL_closed_L12M",
-    "pct_tl_open_L12M","pct_tl_closed_L12M",
-    "Tot_Missed_Pmnt",
-    "Auto_TL","CC_TL","Consumer_TL","Gold_TL",
-    "Home_TL","PL_TL","Secured_TL","Unsecured_TL",
-    "Other_TL","Age_Oldest_TL","Age_Newest_TL"
-]
+# ──────────────────────────────────────────────────
+# Human-readable Labels
+# ──────────────────────────────────────────────────
+LABELS = {
+    "Total_TL":             "Total Trade Lines",
+    "Tot_Closed_TL":        "Closed Accounts",
+    "Tot_Active_TL":        "Active Accounts",
+    "Total_TL_opened_L6M":  "Opened (Last 6 Mo)",
+    "Tot_TL_closed_L6M":    "Closed (Last 6 Mo)",
+    "pct_tl_open_L6M":      "% Opened (Last 6 Mo)",
+    "pct_tl_closed_L6M":    "% Closed (Last 6 Mo)",
+    "pct_active_tl":        "% Active Accounts",
+    "pct_closed_tl":        "% Closed Accounts",
+    "Total_TL_opened_L12M": "Opened (Last 12 Mo)",
+    "Tot_TL_closed_L12M":   "Closed (Last 12 Mo)",
+    "pct_tl_open_L12M":     "% Opened (Last 12 Mo)",
+    "pct_tl_closed_L12M":   "% Closed (Last 12 Mo)",
+    "Tot_Missed_Pmnt":      "Missed Payments",
+    "Auto_TL":              "Auto Loans",
+    "CC_TL":                "Credit Cards",
+    "Consumer_TL":          "Consumer Loans",
+    "Gold_TL":              "Gold Loans",
+    "Home_TL":              "Home Loans",
+    "PL_TL":                "Personal Loans",
+    "Secured_TL":           "Secured Accounts",
+    "Unsecured_TL":         "Unsecured Accounts",
+    "Other_TL":             "Other Accounts",
+    "Age_Oldest_TL":        "Oldest Account Age (Mo)",
+    "Age_Newest_TL":        "Newest Account Age (Mo)",
+}
+
+TRADE_LINE_FEATURES = list(LABELS.keys())
 
 RANGES = {
-    "Total_TL": (0, 25),
-    "Tot_Closed_TL": (0, 25),
-    "Tot_Active_TL": (0, 25),
-    "Total_TL_opened_L6M": (0, 10),
-    "Tot_TL_closed_L6M": (0, 10),
-    "Total_TL_opened_L12M": (0, 20),
-    "Tot_TL_closed_L12M": (0, 20),
+    "Total_TL": (0, 25), "Tot_Closed_TL": (0, 25), "Tot_Active_TL": (0, 25),
+    "Total_TL_opened_L6M": (0, 10), "Tot_TL_closed_L6M": (0, 10),
+    "Total_TL_opened_L12M": (0, 20), "Tot_TL_closed_L12M": (0, 20),
     "Tot_Missed_Pmnt": (0, 100),
-    "Auto_TL": (0, 10),
-    "CC_TL": (0, 10),
-    "Consumer_TL": (0, 20),
-    "Gold_TL": (0, 10),
-    "Home_TL": (0, 10),
-    "PL_TL": (0, 10),
-    "Secured_TL": (0, 20),
-    "Unsecured_TL": (0, 20),
-    "Other_TL": (0, 10),
-    "Age_Oldest_TL": (0, 500),
-    "Age_Newest_TL": (0, 300)
+    "Auto_TL": (0, 10), "CC_TL": (0, 10), "Consumer_TL": (0, 20),
+    "Gold_TL": (0, 10), "Home_TL": (0, 10), "PL_TL": (0, 10),
+    "Secured_TL": (0, 20), "Unsecured_TL": (0, 20), "Other_TL": (0, 10),
+    "Age_Oldest_TL": (0, 500), "Age_Newest_TL": (0, 300),
 }
 
 DEFAULTS = {
-    "Total_TL": 8,
-    "Tot_Closed_TL": 3,
-    "Tot_Active_TL": 5,
-    "Total_TL_opened_L6M": 1,
-    "Tot_TL_closed_L6M": 0,
-    "pct_tl_open_L6M": 0.15,
-    "pct_tl_closed_L6M": 0.05,
-    "pct_active_tl": 0.65,
-    "pct_closed_tl": 0.35,
-    "Total_TL_opened_L12M": 2,
-    "Tot_TL_closed_L12M": 1,
-    "pct_tl_open_L12M": 0.25,
-    "pct_tl_closed_L12M": 0.10,
+    "Total_TL": 8, "Tot_Closed_TL": 3, "Tot_Active_TL": 5,
+    "Total_TL_opened_L6M": 1, "Tot_TL_closed_L6M": 0,
+    "pct_tl_open_L6M": 0.15, "pct_tl_closed_L6M": 0.05,
+    "pct_active_tl": 0.65, "pct_closed_tl": 0.35,
+    "Total_TL_opened_L12M": 2, "Tot_TL_closed_L12M": 1,
+    "pct_tl_open_L12M": 0.25, "pct_tl_closed_L12M": 0.10,
     "Tot_Missed_Pmnt": 0,
-    "Auto_TL": 1,
-    "CC_TL": 3,
-    "Consumer_TL": 2,
-    "Gold_TL": 1,
-    "Home_TL": 1,
-    "PL_TL": 0,
-    "Secured_TL": 4,
-    "Unsecured_TL": 4,
-    "Other_TL": 0,
-    "Age_Oldest_TL": 120,
-    "Age_Newest_TL": 12
+    "Auto_TL": 1, "CC_TL": 3, "Consumer_TL": 2, "Gold_TL": 1,
+    "Home_TL": 1, "PL_TL": 0,
+    "Secured_TL": 4, "Unsecured_TL": 4, "Other_TL": 0,
+    "Age_Oldest_TL": 120, "Age_Newest_TL": 12,
 }
 
+# Green / Gold / Yellow / Red for risk levels
 RISK_LEVELS = {
-    0: ("Very Low Risk", "#2ecc71"),
-    1: ("Low Risk", "#3498db"),
-    2: ("Medium Risk", "#f39c12"),
-    3: ("High Risk", "#e74c3c")
+    0: ("VERY LOW RISK",  "#22C55E"),
+    1: ("LOW RISK",       "#FBBF24"),
+    2: ("MEDIUM RISK",    "#F59E0B"),
+    3: ("HIGH RISK",      "#EF4444"),
+}
+
+RISK_BG = {
+    0: "#1a2e1a", 1: "#2a2510", 2: "#2a2010", 3: "#2e1a1a",
+}
+RISK_BORDER = {
+    0: "#22C55E", 1: "#FBBF24", 2: "#F59E0B", 3: "#EF4444",
 }
 
 
+# ──────────────────────────────────────────────────
+# Session State
+# ──────────────────────────────────────────────────
 if "selected_prospect" not in st.session_state:
-    st.session_state.selected_prospect = np.random.choice(cibil_df["PROSPECT_ID"].values)
+    st.session_state.selected_prospect = cibil_df["PROSPECT_ID"].values[0]
 
 if "trade_inputs" not in st.session_state:
     st.session_state.trade_inputs = DEFAULTS.copy()
 
-st.title("Intelligent Credit Risk Scoring Engine")
 
-col1, col2 = st.columns([3, 1])
+# ──────────────────────────────────────────────────
+# SIDEBAR
+# ──────────────────────────────────────────────────
+with st.sidebar:
+    st.markdown("""
+    <div class="sidebar-brand">
+        <div class="sidebar-brand-icon">CR</div>
+        <div class="sidebar-brand-name">Credit Risk Engine</div>
+        <div class="sidebar-brand-sub">HistGradientBoosting Model</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-with col1:
+    st.markdown('<div class="styled-divider"></div>', unsafe_allow_html=True)
+
     prospect_ids = cibil_df["PROSPECT_ID"].unique()
     st.session_state.selected_prospect = st.selectbox(
-        "Select Prospect ID",
+        "Select Prospect",
         prospect_ids,
         index=list(prospect_ids).index(st.session_state.selected_prospect)
     )
-    st.write(cibil_df.loc[st.session_state.selected_prospect])
 
-with col2:
-    if st.button("Randomize Prospect", use_container_width=True):
-        st.session_state.selected_prospect = np.random.choice(prospect_ids)
-        st.rerun()
+    col_a, col_b = st.columns(2)
+    with col_a:
+        if st.button("Random", use_container_width=True):
+            st.session_state.selected_prospect = np.random.choice(prospect_ids)
+            st.rerun()
+    with col_b:
+        if st.button("Reset", use_container_width=True):
+            st.session_state.trade_inputs = DEFAULTS.copy()
+            st.rerun()
+
+    st.markdown('<div class="styled-divider"></div>', unsafe_allow_html=True)
+    st.markdown("""
+    <div style="font-size:0.7rem; color:#71717A; text-align:center; padding:0.5rem; line-height:1.6;">
+        <span style="color:#A1A1AA; font-weight:600;">Team PowerPuff Boys</span><br>
+        Behavioral Credit Risk Classification<br>
+        using Classical Machine Learning
+    </div>
+    """, unsafe_allow_html=True)
 
 
-st.subheader("Bureau Trade Line Inputs")
+# ──────────────────────────────────────────────────
+# MAIN CONTENT
+# ──────────────────────────────────────────────────
+st.markdown(
+    '<div class="hero-title">Credit Risk <span>Scoring Engine</span></div>',
+    unsafe_allow_html=True
+)
+st.markdown(
+    '<div class="hero-subtitle">Behavioral credit risk classification powered by machine learning</div>',
+    unsafe_allow_html=True
+)
 
-if st.button("Reset to Defaults", use_container_width=True):
-    st.session_state.trade_inputs = DEFAULTS.copy()
-    st.rerun()
+# ── Prospect Overview ──
+selected_row = cibil_df[cibil_df["PROSPECT_ID"] == st.session_state.selected_prospect].iloc[0]
 
-# Render inputs
-for feature in TRADE_LINE_FEATURES:
+st.markdown(
+    '<div class="section-header">Prospect Overview  /  ID #'
+    + str(st.session_state.selected_prospect)
+    + '</div>',
+    unsafe_allow_html=True,
+)
+
+# Row 1
+st.markdown(f"""
+<div class="cards-row">
+    <div class="metric-card">
+        <div class="metric-label">Gender</div>
+        <div class="metric-value">{selected_row.get("GENDER", "N/A")}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Marital Status</div>
+        <div class="metric-value">{selected_row.get("MARITALSTATUS", "N/A")}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Education</div>
+        <div class="metric-value">{selected_row.get("EDUCATION", "N/A")}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Monthly Income</div>
+        <div class="metric-value">Rs. {int(selected_row.get("NETMONTHLYINCOME", 0)):,}</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# Row 2
+st.markdown(f"""
+<div class="cards-row">
+    <div class="metric-card">
+        <div class="metric-label">Employer Tenure</div>
+        <div class="metric-value">{int(selected_row.get("Time_With_Curr_Empr", 0))} mo</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Credit Cards</div>
+        <div class="metric-value">{int(selected_row.get("CC_TL", 0))}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Personal Loans</div>
+        <div class="metric-value">{int(selected_row.get("PL_TL", 0))}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Home Loans</div>
+        <div class="metric-value">{int(selected_row.get("Home_TL", 0))}</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# Row 3
+st.markdown(f"""
+<div class="cards-row">
+    <div class="metric-card">
+        <div class="metric-label">Recent Enquiries (3 Mo)</div>
+        <div class="metric-value">{int(selected_row.get("enq_L3m", 0))}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Missed Payments</div>
+        <div class="metric-value">{int(selected_row.get("Tot_Missed_Pmnt", 0))}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Secured Accounts</div>
+        <div class="metric-value">{int(selected_row.get("Secured_TL", 0))}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Unsecured Accounts</div>
+        <div class="metric-value">{int(selected_row.get("Unsecured_TL", 0))}</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown('<div class="styled-divider"></div>', unsafe_allow_html=True)
+
+
+# ──────────────────────────────────────────────────
+# Bureau Trade Line Inputs
+# ──────────────────────────────────────────────────
+st.markdown('<div class="section-header">Bureau Trade Line Adjustments</div>', unsafe_allow_html=True)
+
+tab1, tab2, tab3, tab4 = st.tabs([
+    "Account Summary",
+    "Recent Activity",
+    "Account Types",
+    "Age & Security",
+])
+
+
+def render_input(feature):
+    label = LABELS.get(feature, feature)
     if "pct" in feature:
         st.session_state.trade_inputs[feature] = st.slider(
-            feature,
-            0.0, 1.0,
+            label, 0.0, 1.0,
             float(st.session_state.trade_inputs[feature]),
-            0.01,
-            key=feature
+            0.01, key=feature,
         )
     else:
-        min_val, max_val = RANGES[feature]
-        
+        mn, mx = RANGES[feature]
         st.session_state.trade_inputs[feature] = st.number_input(
-            feature,
-            min_value=float(min_val),
-            max_value=float(max_val),
+            label,
+            min_value=float(mn), max_value=float(mx),
             value=float(st.session_state.trade_inputs[feature]),
-            key=feature
+            key=feature,
         )
 
 
-if st.button("Predict Risk", use_container_width=True, type="primary"):
-    selected_row = cibil_df[cibil_df["PROSPECT_ID"] == st.session_state.selected_prospect].iloc[0]
+with tab1:
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        render_input("Total_TL")
+        render_input("pct_active_tl")
+    with c2:
+        render_input("Tot_Active_TL")
+        render_input("pct_closed_tl")
+    with c3:
+        render_input("Tot_Closed_TL")
+        render_input("Tot_Missed_Pmnt")
+
+with tab2:
+    st.markdown("**Last 6 Months**")
+    c1, c2, c3, c4 = st.columns(4)
+    with c1: render_input("Total_TL_opened_L6M")
+    with c2: render_input("Tot_TL_closed_L6M")
+    with c3: render_input("pct_tl_open_L6M")
+    with c4: render_input("pct_tl_closed_L6M")
+
+    st.markdown("**Last 12 Months**")
+    c1, c2, c3, c4 = st.columns(4)
+    with c1: render_input("Total_TL_opened_L12M")
+    with c2: render_input("Tot_TL_closed_L12M")
+    with c3: render_input("pct_tl_open_L12M")
+    with c4: render_input("pct_tl_closed_L12M")
+
+with tab3:
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        render_input("CC_TL")
+        render_input("PL_TL")
+        render_input("Auto_TL")
+    with c2:
+        render_input("Consumer_TL")
+        render_input("Gold_TL")
+        render_input("Home_TL")
+    with c3:
+        render_input("Other_TL")
+
+with tab4:
+    c1, c2 = st.columns(2)
+    with c1:
+        render_input("Age_Oldest_TL")
+        render_input("Secured_TL")
+    with c2:
+        render_input("Age_Newest_TL")
+        render_input("Unsecured_TL")
+
+st.markdown('<div class="styled-divider"></div>', unsafe_allow_html=True)
+
+
+# ──────────────────────────────────────────────────
+# PREDICT
+# ──────────────────────────────────────────────────
+_, btn_col, _ = st.columns([1, 2, 1])
+with btn_col:
+    predict_clicked = st.button("Predict Credit Risk", use_container_width=True, type="primary")
+
+if predict_clicked:
     final_input = selected_row.to_dict()
-    
     for key, value in st.session_state.trade_inputs.items():
         final_input[key] = value
-    
+
     input_df = pd.DataFrame([final_input])
-    
     input_df.replace(-99999, np.nan, inplace=True)
-    
-    delinquency_cols = [
-        "time_since_first_deliquency",
-        "time_since_recent_deliquency",
-        "max_delinquency_level",
-        "max_deliq_6mts",
-        "max_deliq_12mts",
-        "max_unsec_exposure_inPct"
-    ]
-    
-    for col in delinquency_cols:
+
+    for col in ["time_since_first_deliquency", "time_since_recent_deliquency",
+                 "max_delinquency_level", "max_deliq_6mts",
+                 "max_deliq_12mts", "max_unsec_exposure_inPct"]:
         if col in input_df.columns:
             input_df[col] = input_df[col].fillna(0)
-    
+
     numeric_cols = input_df.select_dtypes(include=[np.number]).columns
     input_df[numeric_cols] = input_df[numeric_cols].fillna(input_df[numeric_cols].median())
-    
-    cat_cols = [
-        "MARITALSTATUS","EDUCATION","GENDER",
-        "last_prod_enq2","first_prod_enq2"
-    ]
-    
+
+    cat_cols = ["MARITALSTATUS", "EDUCATION", "GENDER", "last_prod_enq2", "first_prod_enq2"]
     input_df = pd.get_dummies(
         input_df,
         columns=[c for c in cat_cols if c in input_df.columns],
-        drop_first=True
+        drop_first=True,
     )
-    
     for col in FEATURES:
         if col not in input_df.columns:
             input_df[col] = 0
-    
     input_df = input_df[FEATURES]
-    
+
     prediction = model.predict(input_df)[0]
     probabilities = model.predict_proba(input_df)[0]
-    
-    risk_label, color = RISK_LEVELS[prediction]
-    
-    st.markdown(
-        f"""
-        <div style="
-            padding:20px;
-            border-radius:10px;
-            background-color:{color};
-            color:white;
-            font-size:20px;
-            font-weight:bold;
-            text-align:center;">
-            {risk_label}
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-    
-    st.write("**Risk Probabilities:**")
+    risk_label, risk_color = RISK_LEVELS[prediction]
+
+    # Result card
+    st.markdown(f"""
+    <div class="risk-result" style="
+        background: {RISK_BG[prediction]};
+        border: 2px solid {RISK_BORDER[prediction]};
+    ">
+        <div class="risk-label" style="color:{risk_color};">{risk_label}</div>
+        <div class="risk-sub">Prospect #{st.session_state.selected_prospect}  —  Predicted Risk Classification</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Probability cards
+    st.markdown('<div class="section-header">Risk Probability Breakdown</div>', unsafe_allow_html=True)
+
+    cards_html = '<div class="cards-row">'
     for i, prob in enumerate(probabilities):
-        label, _ = RISK_LEVELS[model.classes_[i]]
-        st.write(f"{label}: {prob:.4f}")
+        cls = model.classes_[i]
+        lbl, clr = RISK_LEVELS[cls]
+        cards_html += f"""
+        <div class="metric-card" style="border-color:{RISK_BORDER[cls]};">
+            <div class="metric-label" style="color:{clr};">{lbl}</div>
+            <div class="metric-value" style="color:{clr};">{prob*100:.1f}%</div>
+        </div>"""
+    cards_html += '</div>'
+    st.markdown(cards_html, unsafe_allow_html=True)
+
+    # Probability bars
+    st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
+    for i, prob in enumerate(probabilities):
+        cls = model.classes_[i]
+        lbl, clr = RISK_LEVELS[cls]
+        width = max(prob * 100, 2)
+        st.markdown(f"""
+        <div class="prob-container">
+            <div class="prob-label">{lbl}</div>
+            <div class="prob-bar-bg">
+                <div class="prob-bar-fill" style="width:{width}%; background:{clr};">
+                    {prob*100:.1f}%
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown('<div class="styled-divider"></div>', unsafe_allow_html=True)
+    st.markdown("""
+    <div style="text-align:center; color:#71717A; font-size:0.75rem; padding:1rem;">
+        Prediction powered by cost-sensitive HistGradientBoosting classifier
+        — Trained on 51,336 records across 87 features
+    </div>
+    """, unsafe_allow_html=True)
