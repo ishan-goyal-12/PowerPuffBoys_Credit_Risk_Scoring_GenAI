@@ -7,7 +7,6 @@
 This project implements an **AI-driven credit risk classification system** that predicts borrower risk across four priority tiers using behavioral and financial signals from internal bank records and external CIBIL bureau data.
 
 - **Milestone 1:** End-to-end ML pipeline -- data merging, cleaning, EDA, and multi-class classification using Decision Trees, Random Forests, and Gradient Boosting. Deliberate exclusion of Credit Score to force the model to learn from behavioral features.
-- **Milestone 2:** Real-time scoring interface via Streamlit where bank officers can select prospects, adjust trade line inputs, and receive instant risk predictions with probability breakdowns.
 
 ---
 
@@ -52,7 +51,7 @@ The target variable `Approved_Flag` is mapped to four risk tiers:
 
 | Class | Label | Description |
 | :--- | :--- | :--- |
-| **P1** | Very Low Risk | Strong repayment history, long credit history, minimal delinquency |
+| **P1** | Very Low Risk |  Strong repayment history, long credit history, minimal delinquency |
 | **P2** | Low Risk | Generally reliable borrower, minor flags in recent activity |
 | **P3** | Medium Risk | Notable delinquency patterns, limited or unstable credit history |
 | **P4** | High Risk | Significant missed payments, recent delinquencies, high enquiry volume |
@@ -90,7 +89,6 @@ Bureau-level behavioral and demographic data:
 ---
 
 ### Data Preprocessing Pipeline
-
 | Step | Detail |
 | :--- | :--- |
 | **Sentinel Replacement** | `-99999` values converted to `NaN` (dataset convention for missing data) |
@@ -130,7 +128,6 @@ Age_Newest_TL                   0.0223   (most recent account age)
 max_deliq_12mts                 0.0125   (worst delinquency in last year)
 time_since_first_deliquency     0.0085   (how long ago first missed payment)
 ```
-
 ---
 
 ### Model Development
