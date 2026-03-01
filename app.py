@@ -18,36 +18,51 @@ st.set_page_config(
 # ──────────────────────────────────────────────────
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-    /* ── Global ── */
+    /* ══════════ Global ══════════ */
     .stApp {
-        background: #1F1F1F;
-        font-family: 'Inter', sans-serif;
-        color: #A1A1AA;
+        background: #0a0a0a;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: #a1a1aa;
     }
-
     header[data-testid="stHeader"] { background: transparent; }
-    #MainMenu { visibility: hidden; }
-    footer { visibility: hidden; }
+    #MainMenu, footer { visibility: hidden; }
 
-    /* ── Sidebar ── */
+    /* ══════════ Sidebar ══════════ */
     section[data-testid="stSidebar"] {
-        background: #181818;
-        border-right: 1px solid rgba(255,255,255,0.06);
+        background: #111111;
+        border-right: 1px solid rgba(255,255,255,0.04);
+    }
+    section[data-testid="stSidebar"] > div:first-child {
+        padding-top: 1rem;
     }
     section[data-testid="stSidebar"] .stSelectbox label {
-        color: #A1A1AA;
+        color: #a1a1aa;
+        font-size: 0.82rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
     }
 
-    /* ── Hero ── */
-    .hero-title {
-        font-size: 2.5rem;
-        font-weight: 800;
-        color: #FFFFFF;
+    /* ══════════ Main Content Area ══════════ */
+    .block-container {
+        padding: 3rem 4rem 4rem !important;
+        max-width: 1200px;
+    }
+
+    /* ══════════ Hero ══════════ */
+    .hero-wrapper {
         text-align: center;
-        margin-bottom: 0.1rem;
-        letter-spacing: -0.03em;
+        padding: 2.5rem 0 3rem;
+    }
+    .hero-title {
+        font-size: 2.8rem;
+        font-weight: 900;
+        color: #ffffff;
+        letter-spacing: -0.04em;
+        line-height: 1.15;
+        margin-bottom: 0.6rem;
     }
     .hero-title span {
         background: linear-gradient(135deg, #FBBF24, #F59E0B);
@@ -56,198 +71,246 @@ st.markdown("""
         background-clip: text;
     }
     .hero-subtitle {
-        text-align: center;
-        color: #71717A;
-        font-size: 1rem;
-        font-weight: 400;
-        margin-bottom: 2rem;
-    }
-
-    /* ── Metric Cards ── */
-    .metric-card {
-        background: #242424;
-        border: 1px solid rgba(255,255,255,0.08);
-        border-radius: 14px;
-        padding: 1.3rem 1.5rem;
-        margin: 0.4rem 0;
-        text-align: center;
-        transition: all 0.25s ease;
-    }
-    .metric-card:hover {
-        border-color: rgba(251,191,36,0.35);
-        box-shadow: 0 6px 20px rgba(251,191,36,0.06);
-        transform: translateY(-1px);
-    }
-    .metric-label {
-        font-size: 0.7rem;
-        color: #71717A;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        margin-bottom: 0.45rem;
-        font-weight: 600;
-    }
-    .metric-value {
-        font-size: 1.45rem;
-        font-weight: 700;
-        color: #FFFFFF;
-    }
-
-    /* ── Section Headers ── */
-    .section-header {
+        color: #71717a;
         font-size: 1.05rem;
+        font-weight: 400;
+        line-height: 1.6;
+    }
+
+    /* ══════════ Section Headers ══════════ */
+    .section-header {
+        font-size: 0.82rem;
         font-weight: 700;
         color: #FBBF24;
-        margin: 2rem 0 1rem 0;
-        padding-bottom: 0.6rem;
-        border-bottom: 1px solid rgba(255,255,255,0.06);
         text-transform: uppercase;
-        letter-spacing: 0.06em;
+        letter-spacing: 0.12em;
+        margin: 3rem 0 1.6rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
     }
 
-    /* ── Risk Result Card ── */
-    .risk-result {
-        border-radius: 16px;
-        padding: 2.5rem 2rem;
-        text-align: center;
-        margin: 2rem auto;
-        max-width: 520px;
-        animation: fadeIn 0.5s ease-out;
+    /* ══════════ Metric Cards ══════════ */
+    .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.2rem;
+        margin-bottom: 1.2rem;
     }
-    @keyframes fadeIn {
-        from { opacity: 0; transform: scale(0.96); }
-        to { opacity: 1; transform: scale(1); }
-    }
-    .risk-label {
-        font-size: 2rem;
-        font-weight: 800;
-        margin-bottom: 0.5rem;
-        letter-spacing: 0.04em;
-    }
-    .risk-sub { font-size: 0.85rem; color: #71717A; }
-
-    /* ── Probability Bars ── */
-    .prob-container { margin: 0.55rem 0; }
-    .prob-bar-bg {
-        background: #242424;
-        border-radius: 6px;
-        height: 26px;
-        overflow: hidden;
-    }
-    .prob-bar-fill {
-        height: 100%;
-        border-radius: 6px;
-        transition: width 0.7s ease;
-        display: flex;
-        align-items: center;
-        padding-left: 10px;
-        font-size: 0.78rem;
-        font-weight: 600;
-        color: #1F1F1F;
-    }
-    .prob-label {
-        font-size: 0.78rem;
-        color: #71717A;
-        margin-bottom: 3px;
-        font-weight: 500;
-    }
-
-    /* ── Input Styling ── */
-    .stNumberInput label, .stSlider label {
-        color: #A1A1AA !important;
-        font-weight: 500 !important;
-    }
-
-    /* ── Tabs ── */
-    .stTabs [data-baseweb="tab-list"] { gap: 4px; }
-    .stTabs [data-baseweb="tab"] {
-        background: #242424;
-        border-radius: 8px 8px 0 0;
+    .metric-card {
+        background: #161616;
         border: 1px solid rgba(255,255,255,0.06);
-        color: #71717A;
-        font-weight: 500;
+        border-radius: 16px;
+        padding: 1.6rem 1.4rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    .metric-card:hover {
+        border-color: rgba(251,191,36,0.3);
+        background: #1a1a1a;
+        box-shadow: 0 8px 30px rgba(251,191,36,0.04);
+        transform: translateY(-2px);
+    }
+    .metric-label {
+        font-size: 0.65rem;
+        color: #52525b;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        margin-bottom: 0.7rem;
+        font-weight: 700;
+    }
+    .metric-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #f4f4f5;
+        letter-spacing: -0.02em;
+    }
+
+    /* ══════════ Tabs ══════════ */
+    .stTabs {
+        margin-top: 0.8rem;
+    }
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 0.5rem;
+        background: transparent;
+        padding: 0.4rem 0;
+    }
+    .stTabs [data-baseweb="tab"] {
+        background: #161616;
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.06);
+        color: #71717a;
+        font-weight: 600;
+        font-size: 0.82rem;
+        padding: 0.65rem 1.3rem;
+        letter-spacing: 0.01em;
+    }
+    .stTabs [data-baseweb="tab"]:hover {
+        color: #a1a1aa;
+        border-color: rgba(255,255,255,0.12);
     }
     .stTabs [aria-selected="true"] {
-        background: #2a2a2a !important;
+        background: #1c1c1c !important;
         color: #FBBF24 !important;
         border-color: #FBBF24 !important;
-        border-bottom: 2px solid #FBBF24 !important;
+    }
+    .stTabs [data-baseweb="tab-panel"] {
+        padding: 1.8rem 0 0.5rem;
     }
 
-    /* ── Primary Button ── */
+    /* ══════════ Input Widgets ══════════ */
+    .stNumberInput label, .stSlider label {
+        color: #a1a1aa !important;
+        font-weight: 500 !important;
+        font-size: 0.85rem !important;
+        margin-bottom: 0.3rem !important;
+    }
+    .stNumberInput > div {
+        margin-bottom: 1.2rem;
+    }
+    .stSlider > div {
+        margin-bottom: 1rem;
+    }
+
+    /* ══════════ Primary Button ══════════ */
     .stButton > button[kind="primary"] {
         background: #FBBF24 !important;
-        color: #1F1F1F !important;
+        color: #0a0a0a !important;
         border: none !important;
         font-weight: 700 !important;
         border-radius: 50px !important;
-        padding: 0.8rem 2.5rem !important;
-        font-size: 1rem !important;
-        transition: all 0.25s ease !important;
-        box-shadow: 0 4px 14px rgba(251,191,36,0.2) !important;
-        letter-spacing: 0.01em !important;
+        padding: 0.85rem 3rem !important;
+        font-size: 0.95rem !important;
+        letter-spacing: 0.02em !important;
+        transition: all 0.3s cubic-bezier(0.4,0,0.2,1) !important;
+        box-shadow: 0 4px 20px rgba(251,191,36,0.15) !important;
     }
     .stButton > button[kind="primary"]:hover {
         background: #F59E0B !important;
-        transform: translateY(-1px) !important;
-        box-shadow: 0 6px 20px rgba(251,191,36,0.3) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 30px rgba(251,191,36,0.25) !important;
     }
 
-    /* ── Secondary Button ── */
+    /* ══════════ Secondary Button ══════════ */
     .stButton > button:not([kind="primary"]) {
         background: transparent !important;
-        color: #A1A1AA !important;
-        border: 1px solid rgba(255,255,255,0.15) !important;
+        color: #a1a1aa !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
         border-radius: 50px !important;
         font-weight: 500 !important;
-        transition: all 0.25s ease !important;
+        font-size: 0.82rem !important;
+        padding: 0.6rem 1.2rem !important;
+        transition: all 0.3s ease !important;
     }
     .stButton > button:not([kind="primary"]):hover {
         border-color: #FBBF24 !important;
         color: #FBBF24 !important;
     }
 
-    /* ── Divider ── */
+    /* ══════════ Risk Result ══════════ */
+    .risk-result {
+        border-radius: 20px;
+        padding: 3rem 2.5rem;
+        text-align: center;
+        margin: 2.5rem auto;
+        max-width: 520px;
+        animation: fadeIn 0.5s ease-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.96) translateY(8px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .risk-label {
+        font-size: 2.2rem;
+        font-weight: 900;
+        letter-spacing: 0.06em;
+        margin-bottom: 0.6rem;
+    }
+    .risk-sub {
+        font-size: 0.85rem;
+        color: #71717a;
+        font-weight: 400;
+    }
+
+    /* ══════════ Probability Bars ══════════ */
+    .prob-section {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 0.5rem 0 1rem;
+    }
+    .prob-container {
+        margin: 0.75rem 0;
+    }
+    .prob-bar-bg {
+        background: #161616;
+        border-radius: 8px;
+        height: 32px;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.04);
+    }
+    .prob-bar-fill {
+        height: 100%;
+        border-radius: 8px;
+        transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+        display: flex;
+        align-items: center;
+        padding-left: 12px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #0a0a0a;
+    }
+    .prob-label {
+        font-size: 0.72rem;
+        color: #71717a;
+        margin-bottom: 0.35rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    /* ══════════ Dividers ══════════ */
     .styled-divider {
         height: 1px;
-        background: rgba(255,255,255,0.06);
-        margin: 1.5rem 0;
+        background: rgba(255,255,255,0.04);
+        margin: 2rem 0;
     }
 
-    /* ── Cards Row Spacing ── */
-    .cards-row {
-        display: flex;
-        gap: 1rem;
-        margin-bottom: 0.8rem;
-    }
-    .cards-row .metric-card { flex: 1; }
-
-    /* ── Sidebar Brand ── */
+    /* ══════════ Sidebar Brand ══════════ */
     .sidebar-brand {
         text-align: center;
-        padding: 1.5rem 0 0.8rem;
+        padding: 1.8rem 0 1rem;
     }
     .sidebar-brand-icon {
-        width: 44px;
-        height: 44px;
+        width: 48px;
+        height: 48px;
         background: #FBBF24;
-        border-radius: 10px;
+        border-radius: 12px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.1rem;
-        font-weight: 800;
-        color: #1F1F1F;
-        margin-bottom: 0.6rem;
+        font-size: 1.15rem;
+        font-weight: 900;
+        color: #0a0a0a;
+        margin-bottom: 0.8rem;
     }
     .sidebar-brand-name {
-        font-size: 1rem;
+        font-size: 1.05rem;
         font-weight: 700;
-        color: #FFFFFF;
+        color: #f4f4f5;
+        letter-spacing: -0.01em;
     }
     .sidebar-brand-sub {
         font-size: 0.7rem;
-        color: #71717A;
-        margin-top: 0.15rem;
+        color: #52525b;
+        margin-top: 0.25rem;
+    }
+
+    /* ══════════ Footer ══════════ */
+    .app-footer {
+        text-align: center;
+        color: #3f3f46;
+        font-size: 0.72rem;
+        padding: 2rem 0;
+        line-height: 1.7;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -270,7 +333,7 @@ FEATURES = list(model.feature_names_in_)
 
 
 # ──────────────────────────────────────────────────
-# Human-readable Labels
+# Labels & Configuration
 # ──────────────────────────────────────────────────
 LABELS = {
     "Total_TL":             "Total Trade Lines",
@@ -300,8 +363,6 @@ LABELS = {
     "Age_Newest_TL":        "Newest Account Age (Mo)",
 }
 
-TRADE_LINE_FEATURES = list(LABELS.keys())
-
 RANGES = {
     "Total_TL": (0, 25), "Tot_Closed_TL": (0, 25), "Tot_Active_TL": (0, 25),
     "Total_TL_opened_L6M": (0, 10), "Tot_TL_closed_L6M": (0, 10),
@@ -327,20 +388,14 @@ DEFAULTS = {
     "Age_Oldest_TL": 120, "Age_Newest_TL": 12,
 }
 
-# Green / Gold / Yellow / Red for risk levels
 RISK_LEVELS = {
     0: ("VERY LOW RISK",  "#22C55E"),
     1: ("LOW RISK",       "#FBBF24"),
     2: ("MEDIUM RISK",    "#F59E0B"),
     3: ("HIGH RISK",      "#EF4444"),
 }
-
-RISK_BG = {
-    0: "#1a2e1a", 1: "#2a2510", 2: "#2a2010", 3: "#2e1a1a",
-}
-RISK_BORDER = {
-    0: "#22C55E", 1: "#FBBF24", 2: "#F59E0B", 3: "#EF4444",
-}
+RISK_BG = { 0: "#0d1f12", 1: "#1f1a0a", 2: "#1f180a", 3: "#1f0d0d" }
+RISK_BORDER = { 0: "#22C55E", 1: "#FBBF24", 2: "#F59E0B", 3: "#EF4444" }
 
 
 # ──────────────────────────────────────────────────
@@ -348,7 +403,6 @@ RISK_BORDER = {
 # ──────────────────────────────────────────────────
 if "selected_prospect" not in st.session_state:
     st.session_state.selected_prospect = cibil_df["PROSPECT_ID"].values[0]
-
 if "trade_inputs" not in st.session_state:
     st.session_state.trade_inputs = DEFAULTS.copy()
 
@@ -371,8 +425,10 @@ with st.sidebar:
     st.session_state.selected_prospect = st.selectbox(
         "Select Prospect",
         prospect_ids,
-        index=list(prospect_ids).index(st.session_state.selected_prospect)
+        index=list(prospect_ids).index(st.session_state.selected_prospect),
     )
+
+    st.markdown("<div style='height:0.6rem'></div>", unsafe_allow_html=True)
 
     col_a, col_b = st.columns(2)
     with col_a:
@@ -385,9 +441,10 @@ with st.sidebar:
             st.rerun()
 
     st.markdown('<div class="styled-divider"></div>', unsafe_allow_html=True)
+
     st.markdown("""
-    <div style="font-size:0.7rem; color:#71717A; text-align:center; padding:0.5rem; line-height:1.6;">
-        <span style="color:#A1A1AA; font-weight:600;">Team PowerPuff Boys</span><br>
+    <div style="font-size:0.68rem; color:#3f3f46; text-align:center; padding:1rem 0; line-height:1.7;">
+        <span style="color:#71717a; font-weight:600;">Team PowerPuff Boys</span><br>
         Behavioral Credit Risk Classification<br>
         using Classical Machine Learning
     </div>
@@ -395,18 +452,21 @@ with st.sidebar:
 
 
 # ──────────────────────────────────────────────────
-# MAIN CONTENT
+# HERO
 # ──────────────────────────────────────────────────
-st.markdown(
-    '<div class="hero-title">Credit Risk <span>Scoring Engine</span></div>',
-    unsafe_allow_html=True
-)
-st.markdown(
-    '<div class="hero-subtitle">Behavioral credit risk classification powered by machine learning</div>',
-    unsafe_allow_html=True
-)
+st.markdown("""
+<div class="hero-wrapper">
+    <div class="hero-title">Credit Risk <span>Scoring Engine</span></div>
+    <div class="hero-subtitle">
+        Behavioral credit risk classification powered by machine learning
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
-# ── Prospect Overview ──
+
+# ──────────────────────────────────────────────────
+# PROSPECT OVERVIEW
+# ──────────────────────────────────────────────────
 selected_row = cibil_df[cibil_df["PROSPECT_ID"] == st.session_state.selected_prospect].iloc[0]
 
 st.markdown(
@@ -418,7 +478,7 @@ st.markdown(
 
 # Row 1
 st.markdown(f"""
-<div class="cards-row">
+<div class="cards-grid">
     <div class="metric-card">
         <div class="metric-label">Gender</div>
         <div class="metric-value">{selected_row.get("GENDER", "N/A")}</div>
@@ -440,7 +500,7 @@ st.markdown(f"""
 
 # Row 2
 st.markdown(f"""
-<div class="cards-row">
+<div class="cards-grid">
     <div class="metric-card">
         <div class="metric-label">Employer Tenure</div>
         <div class="metric-value">{int(selected_row.get("Time_With_Curr_Empr", 0))} mo</div>
@@ -462,7 +522,7 @@ st.markdown(f"""
 
 # Row 3
 st.markdown(f"""
-<div class="cards-row">
+<div class="cards-grid">
     <div class="metric-card">
         <div class="metric-label">Recent Enquiries (3 Mo)</div>
         <div class="metric-value">{int(selected_row.get("enq_L3m", 0))}</div>
@@ -482,11 +542,9 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="styled-divider"></div>', unsafe_allow_html=True)
-
 
 # ──────────────────────────────────────────────────
-# Bureau Trade Line Inputs
+# TRADE LINE INPUTS
 # ──────────────────────────────────────────────────
 st.markdown('<div class="section-header">Bureau Trade Line Adjustments</div>', unsafe_allow_html=True)
 
@@ -517,7 +575,7 @@ def render_input(feature):
 
 
 with tab1:
-    c1, c2, c3 = st.columns(3)
+    c1, c2, c3 = st.columns(3, gap="large")
     with c1:
         render_input("Total_TL")
         render_input("pct_active_tl")
@@ -530,21 +588,22 @@ with tab1:
 
 with tab2:
     st.markdown("**Last 6 Months**")
-    c1, c2, c3, c4 = st.columns(4)
+    c1, c2, c3, c4 = st.columns(4, gap="large")
     with c1: render_input("Total_TL_opened_L6M")
     with c2: render_input("Tot_TL_closed_L6M")
     with c3: render_input("pct_tl_open_L6M")
     with c4: render_input("pct_tl_closed_L6M")
 
+    st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
     st.markdown("**Last 12 Months**")
-    c1, c2, c3, c4 = st.columns(4)
+    c1, c2, c3, c4 = st.columns(4, gap="large")
     with c1: render_input("Total_TL_opened_L12M")
     with c2: render_input("Tot_TL_closed_L12M")
     with c3: render_input("pct_tl_open_L12M")
     with c4: render_input("pct_tl_closed_L12M")
 
 with tab3:
-    c1, c2, c3 = st.columns(3)
+    c1, c2, c3 = st.columns(3, gap="large")
     with c1:
         render_input("CC_TL")
         render_input("PL_TL")
@@ -557,7 +616,7 @@ with tab3:
         render_input("Other_TL")
 
 with tab4:
-    c1, c2 = st.columns(2)
+    c1, c2 = st.columns(2, gap="large")
     with c1:
         render_input("Age_Oldest_TL")
         render_input("Secured_TL")
@@ -565,13 +624,13 @@ with tab4:
         render_input("Age_Newest_TL")
         render_input("Unsecured_TL")
 
-st.markdown('<div class="styled-divider"></div>', unsafe_allow_html=True)
+st.markdown("<div style='height:2rem'></div>", unsafe_allow_html=True)
 
 
 # ──────────────────────────────────────────────────
 # PREDICT
 # ──────────────────────────────────────────────────
-_, btn_col, _ = st.columns([1, 2, 1])
+_, btn_col, _ = st.columns([1.5, 2, 1.5])
 with btn_col:
     predict_clicked = st.button("Predict Credit Risk", use_container_width=True, type="primary")
 
@@ -607,53 +666,50 @@ if predict_clicked:
     probabilities = model.predict_proba(input_df)[0]
     risk_label, risk_color = RISK_LEVELS[prediction]
 
-    # Result card
+    # ── Result Card ──
     st.markdown(f"""
-    <div class="risk-result" style="
-        background: {RISK_BG[prediction]};
-        border: 2px solid {RISK_BORDER[prediction]};
-    ">
+    <div class="risk-result" style="background:{RISK_BG[prediction]}; border:2px solid {RISK_BORDER[prediction]};">
         <div class="risk-label" style="color:{risk_color};">{risk_label}</div>
         <div class="risk-sub">Prospect #{st.session_state.selected_prospect}  —  Predicted Risk Classification</div>
     </div>
     """, unsafe_allow_html=True)
 
-    # Probability cards
+    # ── Probability Cards ──
     st.markdown('<div class="section-header">Risk Probability Breakdown</div>', unsafe_allow_html=True)
 
-    cards_html = '<div class="cards-row">'
+    cards = '<div class="cards-grid">'
     for i, prob in enumerate(probabilities):
         cls = model.classes_[i]
         lbl, clr = RISK_LEVELS[cls]
-        cards_html += f"""
+        cards += f'''
         <div class="metric-card" style="border-color:{RISK_BORDER[cls]};">
             <div class="metric-label" style="color:{clr};">{lbl}</div>
             <div class="metric-value" style="color:{clr};">{prob*100:.1f}%</div>
-        </div>"""
-    cards_html += '</div>'
-    st.markdown(cards_html, unsafe_allow_html=True)
+        </div>'''
+    cards += '</div>'
+    st.markdown(cards, unsafe_allow_html=True)
 
-    # Probability bars
-    st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
+    # ── Probability Bars ──
+    st.markdown("<div style='height:1.5rem'></div>", unsafe_allow_html=True)
+    bars_html = '<div class="prob-section">'
     for i, prob in enumerate(probabilities):
         cls = model.classes_[i]
         lbl, clr = RISK_LEVELS[cls]
-        width = max(prob * 100, 2)
-        st.markdown(f"""
+        w = max(prob * 100, 2)
+        bars_html += f"""
         <div class="prob-container">
             <div class="prob-label">{lbl}</div>
             <div class="prob-bar-bg">
-                <div class="prob-bar-fill" style="width:{width}%; background:{clr};">
-                    {prob*100:.1f}%
-                </div>
+                <div class="prob-bar-fill" style="width:{w}%; background:{clr};">{prob*100:.1f}%</div>
             </div>
-        </div>
-        """, unsafe_allow_html=True)
+        </div>"""
+    bars_html += '</div>'
+    st.markdown(bars_html, unsafe_allow_html=True)
 
-    st.markdown('<div class="styled-divider"></div>', unsafe_allow_html=True)
+    # ── Footer ──
     st.markdown("""
-    <div style="text-align:center; color:#71717A; font-size:0.75rem; padding:1rem;">
-        Prediction powered by cost-sensitive HistGradientBoosting classifier
-        — Trained on 51,336 records across 87 features
+    <div class="app-footer">
+        Prediction powered by cost-sensitive HistGradientBoosting classifier<br>
+        Trained on 51,336 records across 87 features
     </div>
     """, unsafe_allow_html=True)
