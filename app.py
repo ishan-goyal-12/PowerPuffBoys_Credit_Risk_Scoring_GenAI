@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import joblib
 
-# ──────────────────────────────────────────────────
+
 # Page Configuration
 # ──────────────────────────────────────────────────
 st.set_page_config(
@@ -13,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ──────────────────────────────────────────────────
+
 # Custom CSS — FinNuvora-inspired Black/Gold Theme
 # ──────────────────────────────────────────────────
 st.markdown("""
@@ -316,7 +316,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ──────────────────────────────────────────────────
+
 # Data & Model Loading
 # ──────────────────────────────────────────────────
 @st.cache_data
@@ -332,7 +332,7 @@ model = load_model()
 FEATURES = list(model.feature_names_in_)
 
 
-# ──────────────────────────────────────────────────
+
 # Labels & Configuration
 # ──────────────────────────────────────────────────
 LABELS = {
@@ -398,7 +398,7 @@ RISK_BG = { 0: "#0d1f12", 1: "#1f1a0a", 2: "#1f180a", 3: "#1f0d0d" }
 RISK_BORDER = { 0: "#22C55E", 1: "#FBBF24", 2: "#F59E0B", 3: "#EF4444" }
 
 
-# ──────────────────────────────────────────────────
+
 # Session State
 # ──────────────────────────────────────────────────
 if "selected_prospect" not in st.session_state:
@@ -407,7 +407,7 @@ if "trade_inputs" not in st.session_state:
     st.session_state.trade_inputs = DEFAULTS.copy()
 
 
-# ──────────────────────────────────────────────────
+
 # SIDEBAR
 # ──────────────────────────────────────────────────
 with st.sidebar:
@@ -451,7 +451,7 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 
-# ──────────────────────────────────────────────────
+
 # HERO
 # ──────────────────────────────────────────────────
 st.markdown("""
@@ -464,7 +464,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ──────────────────────────────────────────────────
+
 # PROSPECT OVERVIEW
 # ──────────────────────────────────────────────────
 selected_row = cibil_df[cibil_df["PROSPECT_ID"] == st.session_state.selected_prospect].iloc[0]
@@ -543,7 +543,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 
-# ──────────────────────────────────────────────────
+
 # TRADE LINE INPUTS
 # ──────────────────────────────────────────────────
 st.markdown('<div class="section-header">Bureau Trade Line Adjustments</div>', unsafe_allow_html=True)
@@ -627,7 +627,7 @@ with tab4:
 st.markdown("<div style='height:2rem'></div>", unsafe_allow_html=True)
 
 
-# ──────────────────────────────────────────────────
+
 # PREDICT
 # ──────────────────────────────────────────────────
 _, btn_col, _ = st.columns([1.5, 2, 1.5])
