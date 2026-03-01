@@ -8,7 +8,7 @@ This project implements an **AI-driven credit risk classification system** that 
 
 - **Milestone 1:** End-to-end ML pipeline -- data merging, cleaning, EDA, and multi-class classification using Decision Trees, Random Forests, and Gradient Boosting. Deliberate exclusion of Credit Score to force the model to learn from behavioral features.
 
-Deployed Link : https://powerpuffboys-crs.streamlit.app/
+- Deployed Link : https://powerpuffboys-crs.streamlit.app/
 ---
 
 ### Technology Stack
